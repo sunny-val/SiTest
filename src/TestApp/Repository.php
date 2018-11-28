@@ -2,6 +2,7 @@
 namespace SearchInform\TestApp;
 
 use SearchInform\DataBase as Db;
+use Exception;
 
 /**
  *
@@ -11,12 +12,13 @@ use SearchInform\DataBase as Db;
 class Repository
 {
 
+    public $db;
     /**
      */
     public function __construct()
     {
-        $db = new Db\DbMySql();
-        $err = $db->getErrorStr();
+        $this->db = new Db\DbMySql();
+//         $err = $db->getErrorStr();
     }
 
     /**
@@ -41,7 +43,7 @@ class Repository
 
     /**
      * Прочитать все задачи из БД
-     * * @return array(Task) 
+     * * @return array(Task)
      */
     function readAllTasks()
     {

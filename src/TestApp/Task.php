@@ -1,6 +1,8 @@
 <?php
 namespace SearchInform\TestApp;
 
+use Exception;
+
 /**
  *
  * @author Aleksandr
@@ -9,17 +11,13 @@ namespace SearchInform\TestApp;
 class Task
 {
 
-    // коды приоритетов
-    const PRIORITY_LOW = - 1;
+    public $name;
 
-    const PRIORITY_MEDIUM = 0;
+    public $priority;
 
-    const PRIORITY_HIGHT = 2;
+    public $status;
 
-    // коды статусов
-    const STATUS_WORK = 0;
 
-    const STATUS_COMPLЕTED = 1;
 
     /**
      */
@@ -42,9 +40,19 @@ class Task
      * @param number $status
      * @param string $tags
      * @param string $uuid
+     * @return bool
      */
-    function fillTask($name, $priority = Task::PRIORITY_MEDIUM, $status = self::STATUS_WORK, $tags = '', $uuid = null)
+    function fillTask($name, $priority = TaskPriority::PRIORITY_MEDIUM, $status = TaskStatus::STATUS_WORK, $tags = '', $uuid = null)
     {
+        // создание объектов-значений(Value Objects) и валидация
+        try {
+            $tname = new TaskName($name);
+            $tstatus = new TaskStatus($status);
+            $tstatus = new TaskPriority($priority);
+        } catch (Exception $e) {
+            // echo 'raise exception: ', $e->getMessage(), "\n";
+            return false;
+        }
         $this->name = $name;
         $this->priority = $priority;
         $this->status = $status;
