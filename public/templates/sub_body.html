@@ -1,0 +1,87 @@
+	
+	<!-- Весь экран <div class="container-fluid"> -->
+	<div class="container">
+	
+	    <!-- Верхнее поле: заголовок -->
+	    <div id="header" class="row">
+	        <div class="col ">
+	            <php get_page_logo();>
+	            <!-- <h1><php $wh_page->get_page_title_echo();></h1> -->
+	            <php get_header();>
+	        </div>
+	        <!-- Заставит следующие столбцы переходить на новую строку -->
+	        <div class="w-100" style="background-color: #aaa">
+	        </div>
+	        <div class="col mycol-no-shift-top mycol">
+	            <php include("main_menu.html") >
+	        </div>
+	    </div><!-- конец верхнего поля -->
+	
+	    <div class="row">
+	        <!-- левое поле: дополнительная навигация -->
+	        <div class="col-6 mycol" id="left_div" style="min-width: 11rem;">
+	            <p id='ins1'>12345</p>
+	            <table class="tasklist">
+		            <tr>
+		            	<th>1</th>
+		            	<th>2</th>
+		            </tr>
+		            <tr>
+		            	<td>1231</td>
+		            	<td>4561</td>
+		            </tr>
+		            <tr>
+		            	<td>123</td>
+		            	<td>456</td>
+		            </tr>
+	            </table>
+	            
+	            <ul class="pane-list">
+					<li>
+						<p>Блог web-разработчика</p>
+					</li>
+					<li>
+						<p>Если Вы хотите быстро построить графики для вашего сайта, то этот 
+						<h3><a href="1">Web Designer Wall</a></h3></p>
+					</li>
+				    	<li>
+						<h3><a href="2">Web Designer Wall</a></h3>
+					</li>
+					<li>
+						fsaf
+						<h3><a href="3">Web Designer Wall</a></h3>
+					</li>
+					<li>
+						<h3>N.Design Studio</h3>
+					</li>
+				</ul>
+
+	            <div>
+	                <php include("left_pole.html") >
+	                <php $wh_page->get_sidebar();>
+	            </div>
+	        </div><!-- конец левого поля -->
+	        <!-- правое поле: содержимое страницы -->
+	        <div class="col mycol" id="right_div">
+			<form>
+				<button type="button" class="btn btn-primary btn-add">Добавить задачу</button>
+				<button type="button" class="btn btn-primary btn-del" disable>Удалить задачу</button>
+				<button type="button" class="btn btn-primary btn-refresh">Обновить список задач</button>
+			</form>
+	            <php $wh_page->get_breadcrumb();>
+	            <php $wh_page->get_body();>
+	
+	        </div><!-- конец правого поля -->
+	    </div>
+	
+	    <!-- нижнее поле: footer -->
+	    <div class="row" id="down_div">
+	        <div class="col mycol" id="right_div">
+	            <php $wh_page->get_footer();?>
+	            <php
+	            //phpinfo();
+	            >
+	        </div>
+	    </div><!-- конец нижнего поля -->
+	
+	</div><!-- конец основного контейнера -->

@@ -95,3 +95,7 @@ $repo = new TestApp\Repository();
 
 $task = new TestApp\Task();
 $repo->saveTask($task);
+
+header('Content-Type: application/json; charset=utf-8');
+echo '[123, {"fName1":"дата2", "fName2":"value2"}]';
+

@@ -1,0 +1,21 @@
+body {
+	margin: 10px auto;
+	width: 470px;
+}
+
+.pane-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pane-list li {
+	background: #ffffff;
+	padding: 10px 20px 10px;
+	border-top: solid 1px #c4df9b;
+	cursor: pointer;
+}
+
+.pane-list li:hover {
+	background: #f6ffe9;
+}
