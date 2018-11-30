@@ -1,36 +1,52 @@
-$(document).ready(function() {
-	// сделать кликабельным блок с текстом https://habr.com/post/38208/
-	$(".pane-list li").click(function() {
-		window.location = $(this).find("a").attr("href");
-		return false;
-	});
-	// $.ajax({
-	// url:"req_ajax.php",
-	// type:"POST",
-	// success:function(result){ //роль играет только этот блок
-	// $("#ins1").html(result)
-	// }
-	// });
+$(document).ready(function () {
+    // сделать кликабельным блок с текстом https://habr.com/post/38208/
+    $(".pane-list li").click(function () {
+        window.location = $(this).find("a").attr("href");
+        return false;
+    });
+    // $.ajax({
+    // url:"req_ajax.php",
+    // type:"POST",
+    // success:function(result){ //роль играет только этот блок
+    // $("#ins1").html(result)
+    // }
+    // });
 
-	// обработчик добавления новой задачи
-	$(".btn-add").click(function() {
+    // появилось окно добавления новой задачи
+    $('#dialogAddTask').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget)
+        var recipient = button.data('whatever')
+        var modal = $(this)
+        // выставляем значения в диалоговом окне
+        modal.find('.modal-body input').val(recipient);
+        // приоритет - 'средний' по умолчанию
+        modal.find('#select-prio').val(0);
+        // статус - 'в работе' по умолчанию
+        modal.find('#select-status').val(0);
+    })
 
-		$(".btn-refresh").remove();
-		$(this).toggleClass("active");
-		// alert("Прибыли данные: " + 'dd1');
-		// var jqxhr = $.getJSON("req_ajax.php")
-		// .success(function(data) { alert("Успешное выполнение");
-		// $("#ins1").html(data)})
-		// .error(function() { alert("Ошибка выполнения"); })
-		// .complete(function() { alert("Завершение выполнения"); });
+    // обработчик добавления новой/редактирования существующей задачи
+    $("#btn-submit").click(function () {
 
-		$.getJSON("req_ajax.php", "command=add&name=имя1&status=0", function(data) {
-			// alert("Прибыли данные: " + 'dd');
-			alert("Прибыли данные: " + data);
-		});
-		// alert("Прибыли данные: " + 'dd2');
-	});
-	// обработчик удаления выбранной задачи
-	$(".btn-del").click(function() {
-	});
+        var dataToSend = {};
+        dataToSend['name'] = $('.modal-body input').val();
+        dataToSend['prio'] = $('#select-prio').val();
+        dataToSend['status'] = $('#select-status').val();
+        dataToSend['tags'] = $('#tags-list').val();
+        var textCmd = "command=add_task&param=" + $.toJSON(dataToSend);
+
+        //alert("отпр. данные: " + textCmd);
+        $(".btn-refresh").remove();
+        $(this).toggleClass("active");
+
+        $.getJSON("req_ajax.php", textCmd, function (data) {
+            // alert("Прибыли данные: " + 'dd');
+            // data = json_encode(data);
+            // alert("Прибыли данные: " + data);
+        });
+        // alert("Прибыли данные: " + 'dd2');
+    });
+    // обработчик удаления выбранной задачи
+    $(".btn-del").click(function () {
+    });
 });
