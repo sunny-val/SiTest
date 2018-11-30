@@ -17,7 +17,7 @@ class Task
 
     public $status;
 
-
+    public $uuid;
 
     /**
      */
@@ -40,26 +40,26 @@ class Task
      * @param number $status
      * @param string $tags
      * @param string $uuid
-     * @return bool
+     * @return boolean
      */
-    function fillTask($name, $priority = TaskPriority::PRIORITY_MEDIUM, $status = TaskStatus::STATUS_WORK, $tags = '', $uuid = null)
+    function fill($name, $priority = TaskPriority::PRIORITY_MEDIUM, $status = TaskStatus::STATUS_WORK, $tags = '', $uuid = null)
     {
-        // создание объектов-значений(Value Objects) и валидация
+        // создание объектов-значений(Value Objects) и фильтрация/валидация
         try {
+            $tuuid = new TaskUUID($uuid);
             $tname = new TaskName($name);
-            $tstatus = new TaskStatus($status);
-            $tstatus = new TaskPriority($priority);
+            $tstatus = new TaskStatus((integer) $status);
+            $tpriority = new TaskPriority((integer) $priority);
         } catch (Exception $e) {
             // echo 'raise exception: ', $e->getMessage(), "\n";
             return false;
         }
-        $this->name = $name;
-        $this->priority = $priority;
-        $this->status = $status;
+        $this->name = $tname;
+        $this->priority = $tpriority;
+        $this->status = $tstatus;
+        $this->uuid = $tuuid;
         $this->tags = $tags;
-        $this->uuid == $uuid;
-        if (! $this->uuid)
-            $this->uuid = UUID::guuidv4();
+        return true;
     }
 }
 

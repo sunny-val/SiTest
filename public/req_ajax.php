@@ -1,5 +1,4 @@
 <?php
-use SearchInform\TestApp as TestApp;
 
 /**
  * A project-specific implementation.
@@ -8,6 +7,10 @@ use SearchInform\TestApp as TestApp;
  *            The fully-qualified class name.
  * @return void
  */
+use SearchInform\TestApp\Repository;
+use SearchInform\TestApp\Task as Task;
+use SearchInform\TestApp\TaskName as TaskName;
+
 spl_autoload_register(function ($class) {
     
     // project-specific namespace prefix
@@ -32,6 +35,8 @@ spl_autoload_register(function ($class) {
     }
 });
 
+header('Content-Type: application/json; charset=utf-8');
+
 // код запроса
 $command = $_REQUEST['command']; // $command = $wh_dbase->escape_string($_REQUEST['command']);
                                  
@@ -44,22 +49,32 @@ if ($param)
 switch ($command) {
     // добавить новую задачу
     case add_task:
+        $err = null;
         if ($json_param) {
-            $repo = new TestApp\Repository();
+            $new_task = new Task();
+            // если значения прошли фильтрацию, добавляем их в БД
+            if ($new_task->fill($json_param['name'], $json_param['prio'], $json_param['status'], $json_param['tags'])) {
+                $repo = new Repository();
+                if (! $repo->saveTask($new_task)) {
+                    $err = 1;
+                    $err_txt = $repo->getLastError();
+                }
+            }
+            // $repo->saveTask()
             // $repo . addTask();
         }
         $ret_arr = array(
-            'err' => 0,
+            'err' => $err_txt,
             'task' => '{"123", 34}'
         );
+        break;
+    
     default:
         $ret_arr = array(
-            'err' => 1,
+            'err' => 'unknown command',
             'task' => '{}'
         );
 }
-
-header('Content-Type: application/json; charset=utf-8');
 
 // $json_arr = json_encode($ret_arr);
 // $ret_arr = "{'a', 'jk'}";

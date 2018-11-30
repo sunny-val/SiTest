@@ -15,11 +15,11 @@ class TaskPriority
     private $priority_code;
 
     // коды приоритетов
-    const PRIORITY_LOW = - 1;
-    
-    const PRIORITY_MEDIUM = 0;
-    
-    const PRIORITY_HIGH = 1;
+    const PRIORITY_LOW = 1;
+
+    const PRIORITY_MEDIUM = 2;
+
+    const PRIORITY_HIGH = 3;
 
     /**
      *
@@ -28,24 +28,20 @@ class TaskPriority
      */
     public function __construct($priority_code)
     {
-        if (! filter_var($priority_code, FILTER_VALIDATE_INT, PRIORITY_LOW, PRIORITY_HIGH)) {
+        if (! filter_var($priority_code, FILTER_VALIDATE_INT, array(
+            'options' => array(
+                'min_range' => self::PRIORITY_LOW,
+                'max_range' => self::PRIORITY_HIGH
+            )
+        ))) {
             throw new InvalidArgumentException(sprintf('"%d" is not a valid status', $priority_code));
         }
-        
-        $this->$priority_code = $priority_code;
+        $this->priority_code = $priority_code;
     }
 
     public function __toString()
     {
-        switch ($this->priority_code) {
-            case PRIORITY_LOW:
-                return 'низкий';
-            case PRIORITY_MEDIUM:
-                return 'средний';
-            case PRIORITY_HIGH:
-                return 'высокий';
-        }
-        return '';
+        return (string) $this->priority_code;
     }
 
     public function equals(TaskPriority $priority)

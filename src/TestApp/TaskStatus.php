@@ -12,12 +12,12 @@ use InvalidArgumentException;
 class TaskStatus
 {
 
-    private $status;
+    private $status_code;
 
     // коды статусов
-    const STATUS_WORK = 0;
+    const STATUS_WORK = 1;
 
-    const STATUS_COMPLЕTED = 1;
+    const STATUS_COMPLЕTED = 2;
 
     /**
      *
@@ -26,22 +26,20 @@ class TaskStatus
      */
     public function __construct($status_code)
     {
-        if (! filter_var($status_code, FILTER_VALIDATE_INT, STATUS_WORK, STATUS_COMPLЕTED)) {
+        if (! filter_var($status_code, FILTER_VALIDATE_INT, array(
+            'options' => array(
+                'min_range' => self::STATUS_WORK,
+                'max_range' => self::STATUS_COMPLЕTED
+            )
+        ))) {
             throw new InvalidArgumentException(sprintf('"%d" is not a valid status', $status_code));
         }
-        
-        $this->status = $status_code;
+        $this->status_code = $status_code;
     }
 
     public function __toString()
     {
-        switch ($this->status) {
-            case STATUS_WORK:
-                return 'в работе';
-            case STATUS_COMPLЕTED:
-                return 'завершена';
-        }
-        return '';
+        return (string) $this->status_code;
     }
 
     public function equals(TaskStatus $status)

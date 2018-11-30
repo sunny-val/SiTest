@@ -26,8 +26,7 @@ class TaskName
      */
     public function __construct($name)
     {
-        if (! preg_match('/^[A-Za-z0-9_-]*$/', $name)) {
-            // if (! filter_var($name, FILTER_VALIDATE_STRING)) {
+        if (! filter_var($name, FILTER_DEFAULT)) {
             throw new InvalidArgumentException(sprintf('"%s" is not a valid name', $name));
         }
         
@@ -36,36 +35,11 @@ class TaskName
 
     public function __toString()
     {
-        return $this->$name;
+        return $this->name;
     }
 
     public function equals(TaskName $name)
     {
         return strtolower((string) $this) === strtolower((string) $name);
-    }
-}
-
-class EmailAddress
-{
-
-    private $address;
-
-    public function __construct($address)
-    {
-        if (! filter_var($address, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException(sprintf('"%s" is not a valid email', $address));
-        }
-        
-        $this->address = $address;
-    }
-
-    public function __toString()
-    {
-        return $this->address;
-    }
-
-    public function equals(EmailAddress $address)
-    {
-        return strtolower((string) $this) === strtolower((string) $address);
     }
 }

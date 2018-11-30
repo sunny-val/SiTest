@@ -15,7 +15,7 @@ class DbMySql
     private $db;
 
     // текст с последней ошибкой
-    private $err_text;
+    private $err_text = null;
 
     // имя сервера, на котором расположена база данных
     protected $host = 'localhost';
@@ -32,8 +32,8 @@ class DbMySql
     // пароль для доступа к базе данных
     protected $password = '123';
 
-    // префикс при создании таблиц в базе (TestApp)
-    public $prefix = 'ta_';
+    // название таблицы с задачами
+    public $task_table = "tasks";
 
     /**
      */
@@ -42,7 +42,8 @@ class DbMySql
         // создать соединение с БД
         if (! $this->connect())
             return;
-        /* создать таблицу, если её ещё нет
+        /*
+         * создать таблицу, если её ещё нет
          * CREATE TABLE `tasks` (
          * `uuid` VARCHAR(40) NOT NULL COMMENT 'UUID4 идентификатор задачи',
          * `name` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Название задачи',
@@ -75,9 +76,9 @@ class DbMySql
             'name' => array(
                 'type' => 'char',
                 'length' => 200,
-                'allow_null' => 1,
-                'default' => NULL,
-                'unique' => 0,
+                'allow_null' => 0,
+                'index' => 1,
+                'unique' => 1,
                 'comment' => 'Название задачи'
             ),
             'tags' => array(
@@ -105,16 +106,15 @@ class DbMySql
             )
         );
         
-        $this->createTable("tasks", $columns);
-        
-        // echo 'guuidv4 = ' . UUID::guuidv4() . '<br/>';
+        $this->createTable($this->task_table, $columns);
     }
 
     /**
      */
     function __destruct()
     {
-        // TODO - Insert your code here
+        // закрыть соединение с БД
+        $this->close();
     }
 
     /*
@@ -221,7 +221,7 @@ class DbMySql
         $result = $this->db->query($req);
         if (! $result) // запрос не был выполнен
         {
-            // printf("[%s] Error message: %s<br>\n",__METHOD__,mysqli_error($this->db));// __FUNCTION__ __METHOD__
+            // printf("[%s] Error message(%d): %s<br>\n", __METHOD__, mysqli_errno($this->db), mysqli_error($this->db)); // __FUNCTION__ __METHOD__
             return null;
         }
         return $result;
@@ -246,7 +246,7 @@ class DbMySql
      * index - (0|1) индексируемый столбец
      * unique - (0|1) столбец с уникальным значением в каждом поле
      */
-    protected function createTable($table_name, $columns_param, $comment = '')
+    public function createTable($table_name, $columns_param, $comment = '')
     {
         if (! $this->isValidDb() || empty($columns_param))
             return FALSE;
@@ -343,7 +343,7 @@ class DbMySql
     }
 
     // переименование таблицы в базе данных
-    protected function rename_table($table_name_prev, $table_name_new)
+    public function rename_table($table_name_prev, $table_name_new)
     {
         // $req = sprintf("RENAME TABLE `%s` TO `%s`", $table_name_prev,$table_name_new);
         $req = sprintf("ALTER TABLE `%s` RENAME TO `%s`", $table_name_prev, $table_name_new);
@@ -354,11 +354,39 @@ class DbMySql
     }
 
     // удаление таблицы в базе данных
-    protected function drop_table($table_name)
+    public function drop_table($table_name)
     {
         $req = sprintf("DROP TABLE IF EXISTS `%s`", $table_name);
         if (! $this->requestQuery($req))
             return false; // запрос не был выполнен
         return true;
+    }
+
+    // вставить строку в базу данных
+    // $data_array - массив данных для новой строки
+    // return: true (при успешном выполнении операции) или false
+    public function insert_data($table_name, $data_array)
+    {
+        $values_str = '';
+        foreach ($data_array as $key => $value) {
+            if (! isset($value) || is_null($value)) // if(empty($value))
+                $values_str = $values_str . 'null, ';
+            else
+                $values_str = $values_str . "'$value', ";
+        }
+        // удаляем последнюю запятую
+        $values_str = rtrim($values_str, ', ');
+        $result = $this->requestQuery("insert into `$table_name` values($values_str)");
+        if ($result)
+            return true;
+        else {
+            // в случае ошибочного запроса выставляем текстовое содержимое ошибки
+            $errno = $this->db->errno;
+            if ($errno == 1062)
+                $this->err_text = _("Duplicate task name");
+            else
+                $this->err_text = _("Can't save task in database");
+            return false;
+        }
     }
 }

@@ -20,9 +20,9 @@ $(document).ready(function () {
         // выставляем значения в диалоговом окне
         modal.find('.modal-body input').val(recipient);
         // приоритет - 'средний' по умолчанию
-        modal.find('#select-prio').val(0);
+        modal.find('#select-prio').val(2);
         // статус - 'в работе' по умолчанию
-        modal.find('#select-status').val(0);
+        modal.find('#select-status').val(1);
     })
 
     // обработчик добавления новой/редактирования существующей задачи

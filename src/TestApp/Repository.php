@@ -13,12 +13,13 @@ class Repository
 {
 
     public $db;
+
     /**
      */
     public function __construct()
     {
         $this->db = new Db\DbMySql();
-//         $err = $db->getErrorStr();
+        // $err = $db->getErrorStr();
     }
 
     /**
@@ -33,17 +34,39 @@ class Repository
      * Сохранить в БД задачу
      *
      * @param Task $task
+     * @return boolean
      */
     public function saveTask($task)
     {
-        $task->fillTask('павлин');
-        $db = new Db\DbMySql();
-        $err = $db->getErrorStr();
+        $err = $this->db->getErrorStr();
+        if (empty($err)) {
+            $arr = array(
+                
+                "uuid" => $task->uuid,
+                "name" => $task->name,
+                "tags" => $task->tags,
+                "priority" => $task->priority,
+                "status" => $task->status
+            );
+            return $this->db->insert_data($this->db->task_table, $arr);
+        }
+        return false;
+    }
+
+    /**
+     * Получение описания ошибки, если null - нет ошибки
+     *
+     * @return string|NULL
+     */
+    public function getLastError()
+    {
+        return $this->db->getErrorStr();
     }
 
     /**
      * Прочитать все задачи из БД
-     * * @return array(Task)
+     *
+     * @return array(Task)
      */
     function readAllTasks()
     {
