@@ -1,8 +1,7 @@
 <?php
 namespace SearchInform\TestApp;
 
-use SearchInform\DataBase as Db;
-use Exception;
+use SearchInform\DataBase\DbMySql;
 
 /**
  *
@@ -18,8 +17,18 @@ class Repository
      */
     public function __construct()
     {
-        $this->db = new Db\DbMySql();
+        $this->db = new DbMySql();
         // $err = $db->getErrorStr();
+    }
+
+    /**
+     * Получение описания ошибки, если null - нет ошибки
+     *
+     * @return string|NULL
+     */
+    public function getLastError()
+    {
+        return $this->db->getErrorStr();
     }
 
     /**
@@ -36,7 +45,7 @@ class Repository
      * @param Task $task
      * @return boolean
      */
-    public function saveTask($task)
+    public function saveNewTask($task)
     {
         $err = $this->db->getErrorStr();
         if (empty($err)) {
@@ -44,23 +53,56 @@ class Repository
                 
                 "uuid" => $task->uuid,
                 "name" => $task->name,
-                "tags" => $task->tags,
+                "tags" => $this->db->escapeString($task->tags),
                 "priority" => $task->priority,
                 "status" => $task->status
             );
-            return $this->db->insert_data($this->db->task_table, $arr);
+            return $this->db->insertData($this->db->task_table, $arr);
         }
         return false;
     }
 
     /**
-     * Получение описания ошибки, если null - нет ошибки
+     * Редактировать в БД задачу
      *
-     * @return string|NULL
+     * @param Task $task
+     * @return boolean
      */
-    public function getLastError()
+    public function editTask($task)
     {
-        return $this->db->getErrorStr();
+        $err = $this->db->getErrorStr();
+        if (empty($err)) {
+            $arr = array(
+                
+                "name" => $task->name,
+                "tags" => $this->db->escapeString($task->tags),
+                "priority" => $task->priority,
+                "status" => $task->status
+            );
+            $where = array(
+                "`uuid` = '$task->uuid'"
+            ); // "`login` = $login",'and',"`password` = $pass")
+            return $this->db->updateData($this->db->task_table, $where, $arr);
+        }
+        return false;
+    }
+
+    /**
+     * Удалить в БД задачу
+     *
+     * @param Task $task
+     * @return boolean
+     */
+    public function delTask($task)
+    {
+        $err = $this->db->getErrorStr();
+        if (empty($err)) {
+            $where = array(
+                "`uuid` = '$task->uuid'"
+            );
+            return $this->db->deleteData($this->db->task_table, $where);
+        }
+        return false;
     }
 
     /**
@@ -70,8 +112,17 @@ class Repository
      */
     function readAllTasks()
     {
-        
-        // TODO - Insert your code here
+        $err = $this->db->getErrorStr();
+        if (empty($err)) {
+            // получение списка задач, сначала сортируем по статусу, потом по приоритету
+            return $this->db->selectData($this->db->task_table, '*', null, array(
+                'status',
+                'ASC',
+                'priority',
+                'DESC'
+            
+            ), null);
+        }
+        return false;
     }
 }
-

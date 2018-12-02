@@ -1,173 +1,156 @@
 
 <!-- Весь экран <div class="container-fluid"> -->
 <div class="container">
-
 	<!-- Верхнее поле: заголовок -->
-	<div id="header" class="row">
-		<div class="col ">
-			<phpget_page_logo();> <!-- <h1><php $wh_page->get_page_title_echo();></h1> -->
-			<phpget_header();>
-		</div>
-		<!-- Заставит следующие столбцы переходить на новую строку -->
-		<div class="w-100" style="background-color: #aaa"></div>
-		<div class="col mycol-no-shift-top mycol">
-			<php include("main_menu.html")>
-		</div>
-	</div>
+	<h1 align="left">Список задач</h1>
 	<!-- конец верхнего поля -->
+</div>
 
-	<div class="row">
-		<!-- левое поле: дополнительная навигация -->
-		<div class="col-6 mycol" id="left_div" style="min-width: 11rem;">
-			<p id='ins1'>12345</p>
-			<table class="tasklist">
+<div class="row">
+	<!-- левое поле: список задач -->
+	<div class="col-6 mycol" id="left_div" style="min-width: 40rem;">
+		<div class="alert-err"></div>
+		<!-- таблица со списком задач -->
+		<table class="table table-bordered">
+			<thead>
 				<tr>
-					<th>1</th>
-					<th>2</th>
-				</tr>
-				<tr>
-					<td>1231</td>
-					<td>4561</td>
-				</tr>
-				<tr>
-					<td>123</td>
-					<td>456</td>
-				</tr>
-			</table>
+					<th>Имя</th>
+					<th>Статус</th>
+					<th hidden=''>Статус digital</th>
+					<th>Теги</th>
+					<th hidden=''>Приоритет</th>
+			</thead>
+			<tbody class="tasklist"></tbody>
+		</table>
+	</div>
+	<!-- конец левого поля -->
 
-			<ul class="pane-list">
-				<li>
-					<p>Блог web-разработчика</p>
-				</li>
-				<li>
-					<p>Если Вы хотите быстро построить графики для вашего сайта, то
-						этот
-					<h3>
-						<a href="1">Web Designer Wall</a>
-					</h3>
-					</p>
-				</li>
-				<li>
-					<h3>
-						<a href="2">Web Designer Wall</a>
-					</h3>
-				</li>
-				<li>fsaf
-					<h3>
-						<a href="3">Web Designer Wall</a>
-					</h3>
-				</li>
-				<li>
-					<h3>N.Design Studio</h3>
-				</li>
-			</ul>
+	<!-- правое поле: кнопки интерфейса -->
+	<div class="col mycol" id="right_div">
+		<form>
+			<button type="button" class="btn btn-primary btn-add"
+				data-toggle="modal" data-target="#dialogAddTask"
+				data-whatever="Новая задача">Добавить задачу</button>
+			<br>
+			<button type="button" class="btn btn-primary btn-edit"
+				data-toggle="modal" data-target="#dialogEditTask">Редактировать
+				задачу</button>
+			<br>
+			<button type="button" class="btn btn-primary btn-del">Удалить
+				задачу</button>
+			<br>
+			<button type="button" class="btn btn-primary btn-refresh">Обновить
+				список задач</button>
+		</form>
 
-			<div>
-				<php include("left_pole.html")> <php $wh_page->get_sidebar();>
-
-
-
-
-
-
-
-
-
-
-				
-			</div>
-		</div>
-		<!-- конец левого поля -->
-		<!-- правое поле: содержимое страницы -->
-		<div class="col mycol" id="right_div">
-			<form>
-				<button type="button" class="btn btn-primary btn-add"
-					data-toggle="modal" data-target="#dialogAddTask"
-					data-whatever="Новая задача">Добавить задачу</button>
-				<button type="button" class="btn btn-primary btn-edit"
-					data-toggle="modal" data-target="#dialogAddTask"
-					data-whatever="Редактировать задачу">Редактировать задачу</button>
-				<button type="button" class="btn btn-primary btn-del" disable=''>Удалить задачу</button>
-				<button type="button" class="btn btn-primary btn-refresh">Обновить список задач</button>
-			</form>
-
-			<div class="modal fade" id="dialogAddTask" tabindex="-1"
-				role="dialog" aria-labelledby="titleModalLabel" aria-hidden="true">
-				<div class="modal-dialog" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="titleModalLabel">Добавление
-								новой задачи</h5>
-							<button type="button" class="close" data-dismiss="modal"
-								aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<form>
-								<div class="form-group">
-									<label for="recipient-name" class="col-form-label">Название:</label>
-									<input type="text" class="form-control" id="recipient-name">
-								</div>
-								<div class="form-group">
-									<label for="select-prio" class="col-form-label">Приоритет:</label>
-									<select type="select" class="form-control" id="select-prio">
-										<option value="1">Низкий</option>
-										<option value="2" selected>Средний</option>
-										<option value="3">Высокий</option>
-									</select>
-									<!-- <textarea class="form-control" id="message-text"></textarea> -->
-								</div>
-								<div class="form-group">
-									<label for="select-status" class="col-form-label">Статус:</label>
-									<select type="select" class="form-control" id="select-status">
-										<option value="1" selected>В работе</option>
-										<option value="2">Завершена</option>
-									</select>
-								</div>
-								<div class="form-group">
-									<label for="tags-list" class="col-form-label">Теги:</label>
-									<textarea class="form-control" id="tags-list"></textarea>
-								</div>
-							</form>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary"
-								data-dismiss="modal">Закрыть</button>
-							<button type="button" class="btn btn-primary"
-								data-dismiss="modal" id="btn-submit">Сохранить</button>
-						</div>
+		<div class="modal fade" id="dialogEditTask" tabindex="-1"
+			role="dialog" aria-labelledby="titleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="titleModalLabel">Редактирование
+							задачи</h5>
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form>
+							<div class="form-group">
+								<h4 id="task-edit-name"></h4>
+							</div>
+							<div class="form-group">
+								<label for="select-prio-edit" class="col-form-label">Приоритет:</label>
+								<select type="select" class="form-control" id="select-prio-edit">
+									<option value="1">Низкий</option>
+									<option value="2" selected>Средний</option>
+									<option value="3">Высокий</option>
+								</select>
+								<!-- <textarea class="form-control" id="message-text"></textarea> -->
+							</div>
+							<div class="form-group">
+								<label for="select-status-edit" class="col-form-label">Статус:</label>
+								<select type="select" class="form-control"
+									id="select-status-edit">
+									<option value="1" selected>В работе</option>
+									<option value="2">Завершена</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="tags-list-edit" class="col-form-label">Теги:
+									(через пробел)</label>
+								<textarea class="form-control" id="tags-list-edit"></textarea>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-dismiss="modal">Закрыть</button>
+						<button type="button" class="btn btn-primary btn-submit-edit"
+							data-dismiss="modal">Сохранить</button>
 					</div>
 				</div>
 			</div>
-
-
-
-			<php $wh_page->get_breadcrumb();> <php $wh_page->get_body();>
-
-
-
-
-
-
-
-
-
-
-
-			
 		</div>
-		<!-- конец правого поля -->
-	</div>
 
-	<!-- нижнее поле: footer -->
-	<div class="row" id="down_div">
-		<div class="col mycol" id="right_div">
-			<php $wh_page->get_footer();?> <php//phpinfo();
-	            >
+		<div class="modal fade" id="dialogAddTask" tabindex="-1" role="dialog"
+			aria-labelledby="titleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="titleModalLabel">Добавление новой
+							задачи</h5>
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form>
+							<div class="form-group">
+								<label for="recipient-name" class="col-form-label">Название:</label>
+								<input type="text" class="form-control" id="recipient-name">
+							</div>
+							<div class="form-group">
+								<label for="select-prio" class="col-form-label">Приоритет:</label>
+								<select type="select" class="form-control" id="select-prio">
+									<option value="1">Низкий</option>
+									<option value="2" selected>Средний</option>
+									<option value="3">Высокий</option>
+								</select>
+								<!-- <textarea class="form-control" id="message-text"></textarea> -->
+							</div>
+							<div class="form-group">
+								<label for="select-status" class="col-form-label">Статус:</label>
+								<select type="select" class="form-control" id="select-status">
+									<option value="1" selected>В работе</option>
+									<option value="2">Завершена</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="tags-list" class="col-form-label">Теги:
+									(через пробел)</label>
+								<textarea class="form-control" id="tags-list"></textarea>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-dismiss="modal">Закрыть</button>
+						<button type="button" class="btn btn-primary btn-submit"
+							data-dismiss="modal">Сохранить</button>
+					</div>
+				</div>
+			</div>
 		</div>
-	</div>
-	<!-- конец нижнего поля -->
 
+	</div>
+	<!-- конец правого поля -->
 </div>
+
+<!-- нижнее поле: footer -->
+<div class="row"></div>
+<!-- конец нижнего поля -->
+
 <!-- конец основного контейнера -->

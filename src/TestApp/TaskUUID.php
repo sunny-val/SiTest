@@ -15,6 +15,7 @@ class TaskUUID
      */
     public function __construct($uuid)
     {
+        // если не id, создаём его
         if (! $uuid)
             $uuid = $this->getUUIDV4();
         if (! filter_var($uuid, FILTER_DEFAULT) || ! $this->checkUUIDV4($uuid)) {

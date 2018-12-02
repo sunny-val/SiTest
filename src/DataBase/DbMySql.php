@@ -15,22 +15,22 @@ class DbMySql
     private $db;
 
     // текст с последней ошибкой
-    private $err_text = null;
+    private $errno_text = null;
 
     // имя сервера, на котором расположена база данных
-    protected $host = 'localhost';
+    protected $host = 'xxxxxxxxxx';
 
     // название базы данных, которая уже должна быть создана
-    protected $database = 'test';
+    protected $database = 'xxxxxx';
 
     // номер порта для подключения, пусто если порт по умолчанию (MySQL - 3306, PGSQL - 5432)
     protected $port = '';
 
     // имя пользователя для доступа к базе данных
-    protected $username = 'root';
+    protected $username = 'xxxxxxx';
 
     // пароль для доступа к базе данных
-    protected $password = '123';
+    protected $password = "xxxxxxxxx";
 
     // название таблицы с задачами
     public $task_table = "tasks";
@@ -117,8 +117,9 @@ class DbMySql
         $this->close();
     }
 
-    /*
+    /**
      * Движок базы данных по умолчанию
+     *
      * @return string
      */
     private function getEngine()
@@ -127,31 +128,33 @@ class DbMySql
         return 'InnoDB';
     }
 
-    /*
+    /**
      * Проверка на допустимость указателя к базе
+     *
      * @return bool
      */
     protected function isValidDb()
     {
         // сбрасываем текста с ошибкой
-        $this->err_text = null;
+        $this->errno_text = null;
         if (empty($this->db) || gettype($this->db) != 'object') {
-            $this->err_text = _('Error connecting to MySQL database'); // 'Неверный указатель на базу данных db';
+            $this->errno_text = _('Error connecting to MySQL database'); // 'Неверный указатель на базу данных db';
             return false;
         }
         // код ошибки, 0 - без ошибок
-        $err_code = $this->db->connect_errno;
+        $this->errno = $this->db->connect_errno;
         // если есть код ошибки
-        if ($err_code != 0) {
+        if ($this->errno != 0) {
             // Ошибка подключения - Error Establishing a Database Connection
-            $this->err_text = _('Error connecting to MySQL database') . ' (' . $this->db->connect_errno . ') ' . $this->db->connect_error;
+            $this->errno_text = $this->db->connect_error;
             return false;
         }
         return true;
     }
 
-    /*
+    /**
      * Соедининие с базой данных, устанавливает $db в случае успеха, $err_text в случае ошибки
+     *
      * @return bool
      */
     protected function connect()
@@ -167,6 +170,7 @@ class DbMySql
         if ($this->isValidDb()) {
             // выставляем кодировку обмена с сервером (для нормальной работы mysqli_real_escape_string() в том числе)
             mysqli_set_charset($this->db, 'utf8');
+            $this->database_is_open = true;
             return true;
         }
         $this->close();
@@ -174,33 +178,37 @@ class DbMySql
         return false;
     }
 
-    /*
+    /**
      * Отключение от базы данных, сбрасывает $db и $err_text в случае успеха
+     *
      * @return bool
      */
     protected function close()
     {
-        if (! $this->db->close())
-            return false;
-        unset($this->db);
-        $this->err_text = null; // сброс текста с ошибкой
-        return true;
+        if (isset($this->database_is_open) && $this->db->close()) {
+            unset($this->db);
+            $this->errno_text = null; // сброс текста с ошибкой
+            return true;
+        }
+        return false;
     }
 
-    /*
+    /**
      * Возвращает ошибку в виде строки
+     *
      * @return string
      */
     public function getErrorStr()
     {
-        return $this->err_text;
+        return $this->errno_text;
     }
 
-    /*
+    /**
      * Экранирует специальные символы в строке для использования в выражениях SQL
-     * @param string
-     * @return string
-     * новая строка
+     *
+     * @param
+     *            string
+     * @return string новая строка
      */
     public function escapeString($string)
     {
@@ -208,11 +216,13 @@ class DbMySql
         return $new_string;
     }
 
-    /*
+    /**
      * Запрос к базе данных
-     * @param req - строка с SQL запросом
+     *
+     * @param
+     *            req - строка с SQL запросом
      * @return bool - возвращает null в случае неудачи. В случае успешного выполнения запросов SELECT, SHOW, DESCRIBE или EXPLAIN
-     * вернет объект mysqli_result. Для остальных успешных запросов вернет true.
+     *         вернет объект mysqli_result. Для остальных успешных запросов вернет true.
      */
     private function requestQuery($req)
     {
@@ -221,30 +231,36 @@ class DbMySql
         $result = $this->db->query($req);
         if (! $result) // запрос не был выполнен
         {
+            $this->errno = mysqli_errno($this->db);
+            $this->errno_text = mysqli_error($this->db);
             // printf("[%s] Error message(%d): %s<br>\n", __METHOD__, mysqli_errno($this->db), mysqli_error($this->db)); // __FUNCTION__ __METHOD__
             return null;
         }
         return $result;
     }
 
-    /*
+    /**
      * Создание таблицы в базе данных
-     * @param table_name - название таблицы
-     * @param columns_param - массив столбцов - array([$columnName => array([$coltype => $value]...)]... )
-     * @param comment - комментарий к таблице
-     * @return bool - true (при успешном выполнении операции) или false
      *
-     * параметры столбцов:
-     * type - тип (char|int|bool|date|enum)
-     * length - (число) макс. длина записи
-     * allow_null - (0|1) позволить быть NULL в ячейке (не для txtsql)
-     * default - (число/текст) значение по умолчанию
-     * auto_increment - (0|1) автоматически увеличивающиеся значение
-     * permanent - (0|1) столбец только для чтения
-     * comment - (текст) комментарий
-     * primary - (0|1) столбец является первичным ключём таблицы
-     * index - (0|1) индексируемый столбец
-     * unique - (0|1) столбец с уникальным значением в каждом поле
+     * @param
+     *            table_name - название таблицы
+     * @param
+     *            columns_param - массив столбцов - array([$columnName => array([$coltype => $value]...)]... )
+     * @param
+     *            comment - комментарий к таблице
+     * @return bool - true (при успешном выполнении операции) или false
+     *        
+     *         параметры столбцов:
+     *         type - тип (char|int|bool|date|enum)
+     *         length - (число) макс. длина записи
+     *         allow_null - (0|1) позволить быть NULL в ячейке (не для txtsql)
+     *         default - (число/текст) значение по умолчанию
+     *         auto_increment - (0|1) автоматически увеличивающиеся значение
+     *         permanent - (0|1) столбец только для чтения
+     *         comment - (текст) комментарий
+     *         primary - (0|1) столбец является первичным ключём таблицы
+     *         index - (0|1) индексируемый столбец
+     *         unique - (0|1) столбец с уникальным значением в каждом поле
      */
     public function createTable($table_name, $columns_param, $comment = '')
     {
@@ -342,8 +358,16 @@ class DbMySql
         return true;
     }
 
-    // переименование таблицы в базе данных
-    public function rename_table($table_name_prev, $table_name_new)
+    /**
+     * * Переименование таблицы в базе данных
+     *
+     * @param string $table_name_prev
+     *            предыдущее название таблицы в БД
+     * @param string $table_name_new
+     *            новое название таблицы в БД
+     * @return boolean
+     */
+    public function renameTable($table_name_prev, $table_name_new)
     {
         // $req = sprintf("RENAME TABLE `%s` TO `%s`", $table_name_prev,$table_name_new);
         $req = sprintf("ALTER TABLE `%s` RENAME TO `%s`", $table_name_prev, $table_name_new);
@@ -353,8 +377,14 @@ class DbMySql
         return true;
     }
 
-    // удаление таблицы в базе данных
-    public function drop_table($table_name)
+    /**
+     * Удаление таблицы в базе данных
+     *
+     * @param string $table_name
+     *            название таблицы в БД
+     * @return boolean
+     */
+    public function dropTable($table_name)
     {
         $req = sprintf("DROP TABLE IF EXISTS `%s`", $table_name);
         if (! $this->requestQuery($req))
@@ -362,10 +392,31 @@ class DbMySql
         return true;
     }
 
-    // вставить строку в базу данных
-    // $data_array - массив данных для новой строки
-    // return: true (при успешном выполнении операции) или false
-    public function insert_data($table_name, $data_array)
+    /**
+     * Чистка таблицы в базе данных от всех записей
+     *
+     * @param string $table_name
+     *            название таблицы в БД
+     * @return boolean
+     */
+    protected function truncateTable($table_name)
+    {
+        return $this->requestQuery("truncate `{$table_name}`");
+    }
+
+    /**
+     * *** Data Manipulation Functions ****
+     */
+    
+    /**
+     * вставить строку в базу данных
+     *
+     * @param string $table_name
+     * @param array $data_array
+     *            массив данных для новой строки
+     * @return boolean true (при успешном выполнении операции) или false
+     */
+    public function insertData($table_name, $data_array)
     {
         $values_str = '';
         foreach ($data_array as $key => $value) {
@@ -381,12 +432,209 @@ class DbMySql
             return true;
         else {
             // в случае ошибочного запроса выставляем текстовое содержимое ошибки
-            $errno = $this->db->errno;
-            if ($errno == 1062)
-                $this->err_text = _("Duplicate task name");
-            else
-                $this->err_text = _("Can't save task in database");
+            // $errno = $this->errno;
+            // if ($errno == 1062)
+            // $this->err_text = _("Duplicate task name");
+            // else
+            // if ($errno == 1062)
+            // $this->err_text = _("Can't save task in database");
             return false;
         }
+    }
+
+    /**
+     * Конвертировать массив в строку для запроса MySQL
+     *
+     * @param array $where
+     *            массив условий для выбора строк, пример: array("`login` = $login",'and',"`password` = $pass")
+     *            
+     *            Логические операции:
+     *            array('$a', 'and', '$b'), array('$a', 'or', '$b'), array('$a', 'xor', '$b')
+     *            
+     *            Функции:
+     *            array('md5($a) = $b'), array('strUpper($a) = $b')
+     *            
+     *            Relational Operators:
+     *            array('$a = $b') equal to TRUE if $a is equal to $b
+     *            array('$a != $b') not equal to TRUE if $a is not equal to $b
+     *            array('$a <> $b') not equal to TRUE if $a is not equal to $b
+     *            array('$a < $b') less than TRUE if $a is less than $b
+     *            array('$a <= '$b') less than or equal to TRUE if $a is less than or equal to $b
+     *            array('$a > $b') greater than TRUE if $a is greater than $b
+     *            array('$a >= $b') greater than or equal to TRUE if $a is greater than or equal to $b
+     *            array('$a =~ $b') like TRUE if $a matches the pattern $b. Also see: LIKE clauses
+     *            array('$a !~ $b') not like TRUE if $a does _NOT_ match the pattern $b.
+     *            array('$a ? $b') instring (txtSQL >= 2.2.2 RC2) TRUE if $b is in $a
+     *            array('$a !? $b') not instring (txtSQL >= 2.2.2 RC2) TRUE if $b is NOT in $a
+     * @return string строка для запроса к БД, '' - при ошибке
+     */
+    private function getWhere($where)
+    {
+        if (empty($where) || ! is_array($where))
+            return '';
+        $req = 'where';
+        foreach ($where as $key => $value) {
+            $req .= " $value";
+        }
+        return $req;
+    }
+
+    /**
+     * Конвертировать массив в строку для запроса MySQL
+     *
+     * @param array $orderby
+     *            порядок сортировки строк, пример: array($column1, [ASC|DESC],$column2, [ASC|DESC])
+     * @return string строка для запроса к БД, '' - при ошибке
+     */
+    private function getOrderBy($orderby)
+    {
+        if (empty($orderby) || ! is_array($orderby))
+            return '';
+        $req = 'order by ';
+        $length = count($orderby);
+        for ($i = 0; $i < $length; $i ++) {
+            $value = "`{$orderby[$i]}`";
+            // если следующая значение - новый столбец или конец массива
+            if (empty($orderby[$i + 1]) || (strtolower($orderby[$i + 1]) != 'asc' && strtolower($orderby[$i + 1]) != 'desc'))
+                $order = 'ASC';
+            // если следующее значение - направление сортировки
+            else {
+                $order = $orderby[$i + 1];
+                $i ++;
+            }
+            if (! empty($value)) {
+                $req .= "$value $order, ";
+            }
+        }
+        // удаляем последнюю запятую
+        $req = rtrim($req, ', ');
+        return $req;
+    }
+
+    /**
+     * Конвертировать массив в строку для запроса MySQL
+     *
+     * @param array $limit
+     *            ограничение на число строк, пример: 'limit' => array(10, 19) - 2 числа, начало и длина, если одно число, то количество
+     * @return string строка для запроса к БД, '' - при ошибке
+     */
+    private function getLimit($limit)
+    {
+        if (empty($limit) || ! is_array($limit))
+            return '';
+        if (empty($limit[0]))
+            return '';
+        if (empty($limit[1]))
+            $req = 'LIMIT ' . $limit[0];
+        else
+            $req = 'LIMIT ' . "$limit[0], $limit[1]";
+        return $req;
+    }
+
+    /**
+     * выбрать строки из базы данных
+     *
+     * @param string $table_name
+     *            название таблицы в БД
+     * @param array|string $columns
+     *            массив столбцов для выбора, если все стоблцы, тогда array('*') или '*', пример: array('id', 'name')
+     * @param array|null $where
+     *            массив условий для выбора строк, пример: array("`somecolumn` = 'value'"),
+     * @param array|null $orderby
+     *            порядок сортировки строк, пример: array('id', 'ASC')
+     * @param array|null $limit
+     *            ограничение на число строк, пример: null или array(10) или array(10, 19)
+     *            null - без ограничениий, 2 числа - начало и длина, если одно число, то количество
+     * @return boolean|array массив с данными или пустой массив при успешном выполнении, false - при ошибке
+     */
+    public function selectData($table_name, $columns, $where, $orderby, $limit = null)
+    {
+        $columns_list = ' ';
+        if (! is_array($columns))
+            $columns = array(
+                $columns
+            );
+        foreach ($columns as $key => $value) {
+            if ($value == '*') // выбрать все стоблцы
+            {
+                $columns_list = $value;
+                break;
+            } else
+                $columns_list .= "`$value`, ";
+        }
+        $columns_list = rtrim($columns_list, ', ');
+        // select * from `{$this->dbase->table_name_vsite_struct}` where (`theme`='' or `theme`='$theme_name') and `position`='$position' and `use`='1' order by `order`
+        $req = "select  $columns_list from `$table_name` {$this->getWhere($where)} {$this->getOrderBy($orderby)} {$this->getLimit($limit)}";
+        $result = $this->requestQuery($req);
+        if (! $result)
+            return false;
+        // массив с массивами данных
+        $mass = array();
+        $i = 1;
+        // получаем массив c символьными индексами (MYSQLI_ASSOC MYSQLI_NUM MYSQLI_BOTH)
+        while ($row = $result->fetch_array(MYSQLI_ASSOC)) // mysqli_fetch_array($result,MYSQL_BOTH);// массив с числовыми индексами
+        {
+            $mass[$i] = $row;
+            $i ++;
+        }
+        return $mass;
+    }
+
+    /**
+     * Удаление строк из базы данных по фильтру
+     *
+     * @param string $table_name
+     *            название таблицы в БД
+     * @param array|null $where
+     *            массив условий для выбора строк
+     * @param array|null $limit
+     *            ограничение на число строк, пример: 'limit' => array(10)
+     * @return boolean
+     */
+    public function deleteData($table_name, $where, $limit = null)
+    {
+        if (empty($where) && empty($limit)) // all rows will be deleted - безусловное удаление
+            return $this->truncateTable($table_name);
+        $req_where = $this->getWhere($where);
+        $req_limit = $this->getLimit($limit);
+        $req = "delete from `$table_name` ";
+        if (! empty($req_where))
+            $req = $req . " $req_where";
+        if (! empty($req_limit))
+            $req = $req . " $req_limit";
+        // $req = "delete from `$table_name` " . $this->get_where($where) . ' ' . $this->get_limit($limit);
+        $result = $this->requestQuery($req);
+        if ($result)
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Обновить строки в базе данных
+     *
+     * @param string $table_name
+     *            название таблицы в БД
+     * @param array|null $where
+     *            массив условий для выбора строк, пример: array('strtolower(somecolumn) = value'),
+     * @param array $new_val
+     *            массив с новыми значениями, пример: array('name' => 'Vasya', 'sex' => 'male')
+     * @param array $limit
+     *            ограничение на число строк, пример: 'limit' => array(10)
+     * @return boolean
+     */
+    public function updateData($table_name, $where, $new_val, $limit = null)
+    {
+        $set_sql = 'set '; // set `sid`='$sid', `sid_expire`='$sid_expire', `sid_cond`='$sid_cond'
+        foreach ($new_val as $key => $value) {
+            $set_sql .= "`$key`='$value', ";
+        }
+        // удаляем последнюю запятую
+        $set_sql = rtrim($set_sql, ', ');
+        $result = $this->requestQuery("update `$table_name` $set_sql {$this->getWhere($where)}");
+        if ($result)
+            return true;
+        else
+            return false;
     }
 }

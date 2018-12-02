@@ -1,21 +1,33 @@
 body {
+	font-family: "Trebuchet MS", "Helvetica", "Arial", "Verdana",
+		"sans-serif";
+	font-size: 0.95em; /* Шрифт на веб-странице */
 	margin: 10px auto;
-	width: 470px;
+	padding: 20px;
+	background: #ffffff; /* Цвет фона */
 }
 
-.pane-list {
+button {
+	margin: 4px;
+}
+
+.tasklist {
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-.pane-list li {
+.tasklist tr {
 	background: #ffffff;
 	padding: 10px 20px 10px;
 	border-top: solid 1px #c4df9b;
 	cursor: pointer;
 }
 
-.pane-list li:hover {
+.tasklist tr:hover {
 	background: #f6ffe9;
+}
+
+.selected {
+	background: #e6ffd9 !important;
 }

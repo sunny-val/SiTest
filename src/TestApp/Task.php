@@ -25,14 +25,6 @@ class Task
     {}
 
     /**
-     */
-    function __destruct()
-    {
-        
-        // TODO - Insert your code here
-    }
-
-    /**
      * заполнить текущую задачу
      *
      * @param string $name
@@ -58,6 +50,7 @@ class Task
         $this->priority = $tpriority;
         $this->status = $tstatus;
         $this->uuid = $tuuid;
+        // Внимание! tags не проверенная переменная, перед записью в БД сделать escapeString(tags)
         $this->tags = $tags;
         return true;
     }
